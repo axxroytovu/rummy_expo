@@ -19,6 +19,7 @@ class player():
             self.hand.append(self.deck.pop())
         for c in self.hand:
             c.on_draw(game_, playstate_, player_id)
+        self.hand.sort(key=lambda i: (i.icons[1:], i.icons))
     
     def draw(self, game_, playstate_, player_id):
         discard_card = self.controller.draw_ai(player_id, playstate_)
@@ -28,6 +29,8 @@ class player():
         self.hand.remove(discard_card)
         while len(self.hand) < self.handsize:
             self.hand.append(self.deck.pop())
+            self.hand[-1].on_draw(game_, playstate, player_id)
+        self.hand.sort(key=lambda i: (i.icons[1:], i.icons))
     
     def play(self, playstate_, player_id):
         playcards = self.controller.play_ai(player_id, playstate_)
@@ -46,7 +49,11 @@ class playstate():
     def calculate(self, game_):
         for i, p in sorted(enumerate(self.players), key=lambda v: v[1].score):
             for card in list(p.being_played):
-                if card.conditions_met(game_, self, i):
+                collect_orphans, valid = card.conditions_met(game_, self, i)
+                if valid:
+                    for c in collect_orphans:
+                        self.orphan_cards.remove(c)
+                        p.being_played.append(c)
                     card.on_play(game_, self, i)
                 else:
                     print(f"Player {i} played orphan card {card.icons}")
@@ -59,6 +66,19 @@ class playstate():
         for i, p in sorted(enumerate(self.players), key=lambda v: v[1].score):
             for card in list(p.in_play):
                 card.eot(game_, self, i)
+    
+    def display(self):
+        print()
+        print(self.players[1].name)
+        print("in play")
+        print(", ".join([c.icons for c in self.players[1].in_play]))
+        print("orphans")
+        print(", ".join([c.icons for c in self.orphan_cards]))
+        print(self.players[0].name)
+        print("in play")
+        print(", ".join([c.icons for c in self.players[0].in_play]))
+        print("hand")
+        print(", ".join([str((i, c.icons)) for i, c in enumerate(self.players[0].hand)]))
 
 
 class game():

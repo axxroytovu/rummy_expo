@@ -20,19 +20,15 @@ class player(controller):
     is_player = True
     
     def draw_ai(self, player_id, playstate):
-        hand = sorted(playstate.players[player_id].hand, key=lambda i: (i.value, i.icons[1:], i.icons))
-        for i, c in enumerate(hand):
-            print(i, c.icons)
+        playstate.display()
         discard_id = int(input("Choose a card to discard: "))
-        return hand[discard_id]
+        return playstate.players[player_id].hand[discard_id]
 
     def play_ai(self, player_id, playstate):
-        hand = sorted(playstate.players[player_id].hand, key=lambda i: (i.value, i.icons[1:], i.icons))
-        for i, c in enumerate(hand):
-            print(i, c.icons)
+        playstate.display()
         play_ids = input("Choose any number of cards to play separated by commas: ")
         try:
-            play_cards = [hand[int(i)] for i in play_ids.split(",")]
+            play_cards = [playstate.players[player_id].hand[int(i)] for i in play_ids.split(",")]
         except ValueError:
             play_cards = []
         return play_cards

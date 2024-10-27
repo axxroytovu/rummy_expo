@@ -52,7 +52,7 @@ class card(ABC):
     
     @abstractmethod
     def conditions_met(self, game, playstate, player_id):
-        return False
+        return [], False
 
 
 class poker_card(card):
@@ -61,7 +61,8 @@ class poker_card(card):
         return len(count_) >= 3
     
     def conditions_met(self, game, playstate, player_id):
-        return self.has_set(playstate.orphan_cards + playstate.players[player_id].being_played)
+        valid = self.has_set(playstate.orphan_cards + playstate.players[player_id].being_played)
+        return [c for c in playstate.orphan_cards if c.value==self.value], valid
     
     def on_play(self, game, playstate, player_id):
         print(f"{playstate.players[player_id].name} played {self.name}")
